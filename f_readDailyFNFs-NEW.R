@@ -40,44 +40,30 @@ if(!("package:dplyr" %in% search())) {
 }
 
 
-readDailyFNFs <- function(station_list = c("BND", "ORO", "YRS", "FOL", "MHB",
-                                           "MKM", "GDW", "TLG", "MRC", "MIL"),
-                          start_date = "2014-10-01",
-                          end_date = "Now",
+readDailyFNFs <- function(station_list = c("TLG", "YRS", "GDW", "SJF", "EXC"),
                           save_csv = TRUE) {
     
-    scrape_start <- paste(month(start_date),"%2F", 
-                          day(start_date),"%2F", 
-                          year(start_date), sep = "")
+    # Initialize start and stop dates.
+    start_date <- "2021-01-01"
+    end_date <- as.character(as.Date(now()))
     
-    if (end_date == "Now") {
-        scrape_end <- "Now"
-        end_date <- today()
-    } else {
-        scrape_end <- paste(month(end_date),"%2F", 
-                            day(end_date),"%2F",
-                            year(end_date), sep = "")
-    }
     
     daily_fnfs <- list()
     
+    
+    
+    # https://cdec.water.ca.gov/dynamicapp/req/CSVDataServlet?Stations=TLG&SensorNums=8&dur_code=D&Start=2021-02-03&End=2021-03-03
+    # https://cdec.water.ca.gov/dynamicapp/req/CSVDataServlet?Stations=YRS&SensorNums=8&dur_code=D&Start=2021-02-03&End=2021-03-03
+    
     for (i in station_list) {
         cat("Processing Station ",i,"...\n", sep = "")
-        source_url <- paste("http://cdec.water.ca.gov/cgi-progs/queryCSV?", 
-                            "station_id=", i,
-                            "&sensor_num=8&dur_code=D&start_date=", scrape_start,
-                            "&end_date=", scrape_end,
-                            "&data_wish=View+CSV+Data",
-                            sep = "")
+        source_url <- paste0("https://cdec.water.ca.gov/dynamicapp/req/CSVDataServlet?Stations=", i,
+                            "&SensorNums=8&dur_code=D&Start=", start_date, "&End=", end_date)
         daily_fnfs[[i]] <- read.csv(source_url, 
                                     skip = 1, 
                                     na.strings = "m",
                                     stringsAsFactors = FALSE)
-        names(daily_fnfs[[i]]) <- c("date", "time","daily_fnf_cfs")
-        daily_fnfs[[i]] <- daily_fnfs[[i]] %>% 
-            mutate(station_id = i) %>%
-            select(date, station_id, daily_fnf_cfs)
-    }
+        }
     
     daily_fnfs <- bind_rows(daily_fnfs)
     daily_fnfs$date <- as.Date(as.character(daily_fnfs$date), "%Y%m%d")
