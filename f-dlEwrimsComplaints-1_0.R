@@ -4,8 +4,10 @@
 ##'
 ##'Function returns file path to downloaded reporting comliance file.
 
-getEwrimsComplaints <- function(cred_file = "ewrims_key.csv",
-                                      save_file = FALSE) {
+# getEwrimsComplaints <- function(cred_file = "ewrims_key.csv",
+#                                       save_file = FALSE) {
+cred_file = "ewrims-key.csv"
+save_file = FALSE
 
     ## Initialization. ----
 
@@ -44,7 +46,7 @@ getEwrimsComplaints <- function(cred_file = "ewrims_key.csv",
     # Create Selenium server.
     driver<- rsDriver(port = free_port(),
                       browser= "chrome",
-                      chromever = "83.0.4103.39",
+                      chromever = "100.0.4896.60",
                       extraCapabilities = eCaps)
     remDr <- driver[["client"]]
 
@@ -57,17 +59,12 @@ getEwrimsComplaints <- function(cred_file = "ewrims_key.csv",
     passwd <- remDr$findElement(using = "name", value = "password")
     passwd$sendKeysToElement(list(creds$p_word, "\uE007"))
 
-    # Navigate to Reporting Compliance download page.
-    remDr$navigate("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/reportingComplianceDetailsDownloadSetup.do")
+    # Navigate to Complaints page.
+    remDr$navigate("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/EWComplaintServlet?Purpose=getEwrimsComplaintSearch&Page_From=EWMenuAuthorized.jsp&Redirect_Page=EWComplaintSearch.jsp")
 
-    # Select year to download from dropdown.
-    dd_string <- paste0("//*/option[@value = '", rept_year,"']")
-    option <- remDr$findElement(using = "xpath", dd_string)
-    option$clickElement()
-    Sys.sleep(3)
-
-    # Download the data file.
-    download <- remDr$findElement("xpath", '//input[@type="submit"]')
+    # Click Search button to retrieve complaints.
+    
+    download <- remDr$findElement("xpath", '//input[@value="Search"]')
     download$clickElement()
     Sys.sleep(5)
 
@@ -98,4 +95,4 @@ getEwrimsComplaints <- function(cred_file = "ewrims_key.csv",
     }
 
 
-}
+# }
